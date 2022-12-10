@@ -1,0 +1,274 @@
+<?php
+
+namespace Dashboard\Console\Commands;
+
+use Dashboard\Classes\Helpers\Falconide;
+use Dashboard\Data\Models\NotificationSend;
+use Dashboard\Mail\SalePromotions;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
+
+class SendPromotionalEmails extends Command {
+	/**
+	 * The name and signature of the console command.
+	 *
+	 * @var string
+	 */
+	protected $signature = 'promotionalEmail:send {file}';
+
+	/**
+	 * The console command description.
+	 *
+	 * @var string
+	 */
+	protected $description = 'Send promotional mails to Farida Gupta Customer Base';
+
+	/**
+	 * Create a new command instance.
+	 *
+	 * @return void
+	 */
+	public function __construct() {
+		parent::__construct();
+	}
+
+	/**
+	 * Execute the console command.
+	 *
+	 * @return mixed
+	 */
+	public function handle() {
+		//
+		set_time_limit(0);
+		$file       = $this->argument('file');
+		$start      = 100*$file;
+		$limit      = 10;
+		$totalUsers = 10;
+
+		$mailPurpose = '15_august_sale';
+
+		// $data['tag']     = 'eoss-sale-22';
+		// $data['subject'] = " EOSS. Upto 50% off on almost everything!";
+		$data['tag']     = '15_august_sale';
+		$data['subject'] = "Free Shipping on All Orders & 15% OFF on Select Styles.";
+		//$data['subject'] = "Here’s to the strong women!";
+
+		$data['mcPreviewText'] = "";
+
+		$data['url'] = "https://goo.gl/N16BLE";
+
+		$data['template'] = 'emails.promotions.NewArrivals_9August';
+
+		//$data['template']      = 'emails.promotions.eoss-sale-9jan';
+
+		$users[0]['email']       = 'sandeep@faridagupta.com';
+		$users[0]['firstname']   = 'Sandeep';
+		$users[0]['customer_id'] = '11111';
+
+		$users[1]['email']       = 'mithun@faridagupta.com';
+		$users[1]['firstname']   = 'Mithun';
+		$users[1]['customer_id'] = '2222';
+
+		$users[2]['email']       = 'sahil@faridagupta.com';
+		$users[2]['firstname']   = 'Sahil';
+		$users[2]['customer_id'] = '2222';
+
+		$users[3]['email']       = 'chandankumar8050@gmail.com';
+		$users[3]['firstname']   = 'Chandan';
+		$users[3]['customer_id'] = '2222';
+
+		$users[4]['email']       = 'monu@faridagupta.com';
+		$users[4]['firstname']   = 'Monu';
+		$users[4]['customer_id'] = '3333';
+
+		$users[5]['email']       = 'omprakash@faridagupta.com';
+		$users[5]['firstname']   = 'Om Prakash';
+		$users[5]['customer_id'] = '2222';
+
+		$users[6]['email']       = 'komal@faridagupta.com';
+		$users[6]['firstname']   = 'Komal';
+		$users[6]['customer_id'] = '44444';
+
+		$users[7]['email']       = 'sanjay@faridagupta.com';
+		$users[7]['firstname']   = 'Sanjay';
+		$users[7]['customer_id'] = '5555';
+
+		$users[8]['email']       = 'rajan@faridagupta.com';
+		$users[8]['firstname']   = 'Rajan';
+		$users[8]['customer_id'] = '66666';
+
+<<<<<<< HEAD
+	
+=======
+		$users[9]['email']       = 'kaynat@faridagupta.com';
+		$users[9]['firstname']   = 'Kaynat';
+		$users[9]['customer_id'] = '66666';
+
+
+		$users[10]['email']       = 'nitin@faridagupta.com';
+		$users[10]['firstname']   = 'Nitin';
+		$users[10]['customer_id'] = '7777';
+
+		$users[11]['email']       = 'monunath01@gmail.com';
+		$users[11]['firstname']   = 'Monu';
+		$users[11]['customer_id'] = '88888';
+
+		$users[12]['email']       = 'zeba@faridagupta.com';
+		$users[12]['firstname']   = 'Zeba';
+		$users[12]['customer_id'] = '999';
+
+		$users[13]['email']       = 'harleen@faridagupta.com';
+		$users[13]['firstname']   = 'Harleen';
+		$users[13]['customer_id'] = '13435';
+
+		$users[14]['email']       = 'khushboo@faridagupta.com';
+		$users[14]['firstname']   = 'Khushboo';
+		$users[14]['customer_id'] = '2353';
+
+		$users[15]['email']       = 'sana@faridagupta.com';
+		$users[15]['firstname']   = 'sana';
+		$users[15]['customer_id'] = '2354';
+
+		$users[16]['email']       = 'sandeep@faridagupta.com';
+		$users[16]['firstname']   = 'Sandeep';
+		$users[16]['customer_id'] = '2544';
+
+		$users[17]['email']       = 'chandan@faridagupta.com';
+		$users[17]['firstname']   = 'Chandan';
+		$users[17]['customer_id'] = '2451';
+
+		$users[18]['email']       = 'sanjayjss26@gmail.com';
+		$users[18]['firstname']   = 'Sanjay';
+		$users[18]['customer_id'] = '4567';
+
+		$users[19]['email']       = 'kiran@faridagupta.com';
+		$users[19]['firstname']   = 'Kiran';
+		$users[19]['customer_id'] = '2345';
+
+		$users[20]['email']       = 'shad@faridagupta.com';
+		$users[20]['firstname']   = 'Shad';
+		$users[20]['customer_id'] = '2356';
+
+		$users[21]['email']       = 'shivam@faridagupta.com';
+		$users[21]['firstname']   = 'Shivam';
+		$users[21]['customer_id'] = '9001';
+
+		$users[22]['email']       = 'gagan@faridagupta.com';
+		$users[22]['firstname']   = 'Gagan';
+		$users[22]['customer_id'] = '9002';
+
+		$users[22]['email']       = 'govind@faridagupta.com';
+		$users[22]['firstname']   = 'Govind';
+		$users[22]['customer_id'] = '9003';
+
+		$users[23]['email']       = 'ramesh@faridagupta.com';
+		$users[23]['firstname']   = 'Ramesh';
+		$users[23]['customer_id'] = '9004';
+
+		$users[24]['email']       = 'dhawan@faridagupta.com';
+		$users[24]['firstname']   = 'Dhawan';
+		$users[24]['customer_id'] = '9005';
+>>>>>>> 0800fe14341f0cb523dec10b01f06b54f168aa3a
+
+		$users[25]['email']       = 'vezotolu@faridagupta.com';
+		$users[25]['firstname']   = 'Vezotolu';
+		$users[25]['customer_id'] = '9006';
+
+		$users[25]['email']       = 'abhishek@faridagupta.com';
+		$users[25]['firstname']   = 'Abhishek';
+		$users[25]['customer_id'] = '9007';
+
+		
+
+		// $users[4]['email']     = 'web-reax8@mail-tester.com';
+		// $users[4]['firstname'] = 'Mail Tester';
+
+		$u = NotificationSend::getCustomers($start, $limit, $mailPurpose);
+
+		echo "\n\n".$totalUsers = count($u);
+
+		if ($totalUsers > 0) {
+
+			$this->sendEmails($users, $data);
+			//exit;
+
+			$i = 0;
+
+			while ($totalUsers > 0) {
+
+				$users                  = NotificationSend::getCustomers($start, $limit, $mailPurpose);
+				echo "\n\n".$totalUsers = count($users);
+
+				if (!empty($users)) {
+					$this->sendEmails($users, $data);
+					$i = $i+count($users);
+					if ($i >= 6000) {
+						exit;
+					}
+				}
+
+			}
+		}
+
+	}
+
+	public function sendEmails($users, $data) {
+		foreach ($users as $user) {
+
+			echo $data['to'] = strtolower(trim($user['email']));
+
+			$firstname         = explode(' ', $user['firstname']);
+			$data['firstname'] = ucfirst(strtolower(trim($firstname['0'])));
+
+			if (strtolower($data['firstname']) == 'unknown' || strtolower($data['firstname']) == 'test') {
+				$data['firstname'] = '';
+			}
+
+			$email = '"'.$data['firstname'].'" <'.$data['to'].'>';
+
+			if (config('mail.through') == 'Falconide') {
+
+				$data['message'] = (string) View::make($data['template'])->with([
+						'subject'       => $data['subject'],
+						'mcPreviewText' => $data['mcPreviewText'],
+						'firstname'     => $data['firstname'],
+						'customer_id'   => $user['customer_id']
+					]);
+
+				$data["replyTo"] = config('mail.reply-to.address');
+				$data["from"]    = config('mail.from.address');
+
+				$falconideObj = new Falconide();
+				try {
+
+					$res = $falconideObj->createMail($data);
+					if ($res->message == 'SUCCESS') {
+						$user['status'] = 1;
+					} else {
+						print_r($res);
+						exit;
+					}
+					//$user['status'] = 1;
+				} catch (\Exception $e) {
+					echo "mail not sent".$e->getMessage();
+					$user['status'] = -1;
+				}
+
+			} else {
+				try {
+					Mail::to($data['to'])->send(new SalePromotions($data));
+					$user['status'] = 1;
+				} catch (\Exception $e) {
+					echo "mail not sent".$e->getMessage();
+					$user['status'] = -1;
+				}
+			}
+
+			NotificationSend::updateStatus($user);
+
+		}
+
+	}
+}

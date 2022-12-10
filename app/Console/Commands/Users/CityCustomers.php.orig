@@ -1,0 +1,256 @@
+<?php
+/**
+ * User: Komal Bhagat
+ */
+namespace Dashboard\Console\Commands\Users;
+
+use Dashboard\Classes\Helpers\CreateMailTemplates;
+use Dashboard\Classes\Helpers\Utility;
+use Dashboard\Data\Models\CustomerProductNotify;
+use Dashboard\Data\Models\EmailUpdates;
+use Dashboard\Data\Models\NewsletterSubscriber;
+use Dashboard\Data\Models\OfflineCustomerEntity;
+use Dashboard\Data\Models\SalesFlatOrderAddress;
+use Dashboard\Data\Models\SmsUpdates;
+
+
+use Illuminate\Console\Command;
+
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputArgument;
+
+class CityCustomers extends Command {
+	/**
+	 * The name and signature of the console command.
+	 *
+	 * @var string
+	 */
+	protected $signature = 'cityCustomers:create {data}';
+
+	/**
+	 * The console command description.
+	 *
+	 * @var string
+	 */
+	protected $description = 'Command description';
+
+	/**
+	 * Create a new command instance.
+	 *
+	 * @return void
+	 */
+	public function __construct() {
+		parent::__construct();
+	}
+
+	/**
+	 * Execute the console command.
+	 *
+	 * @return mixed
+	 */
+	
+	public function handle() {
+
+		$data = $this->argument('data');
+
+ 		$sendSms       = isset($data['sendsms']) ? $data['sendsms'] : 0;
+ 		$sendEmail     = isset($data['sendemail']) ? $data['sendemail'] : 0;
+ 		$city 		   = isset($data['city']) ? $data['city'] : '';
+ 		$cityLike 	   = isset($data['citylike']) ? $data['citylike'] : '';
+ 		$emailSubject  = isset($data['subject']) ? $data['subject'] : '';
+ 		$smsData       = isset($data['smscontent']) ? $data['smscontent'] : '';
+ 		$templateName  = isset($data['templatename']) ? $data['templatename'] : '';
+ 		$userType      = isset($data['usertype']) ? $data['usertype'] : '';
+		
+ 		$citydata = explode('-', $city);
+ 		$cityid	  = $citydata['0'];
+ 		$cityname = $citydata['1'];
+
+ 		$cityLike = str_replace(',','|',$cityLike);
+
+		set_time_limit(0);
+
+		$signature = config('sms.signature.without_no');
+		$site      = config('app.site_url');
+		$number    = config('app.support_no');
+
+		//$template_name = 'emails.promotions.chandigarh-exhibition';
+
+		$template_name = $templateName;  //'emails.promotions.hyderabadExhibition';
+
+		$sendSms   = isset($sendSms) ? $sendSms : 0;
+		$sendEmail = isset($sendEmail) ? $sendEmail : 0;
+
+
+		$link           = config('app.site_url').'/'.'all-category.html';
+		$cityname       = $cityname; 	//show on sms content
+		$exhibitionCity = $cityname; 	//city name in database
+		$cityid         = $cityid; 		//city id in exhibition_city table
+		$cityLike       = "'$cityLike'";	//"'Hyderabad|Hyderabad'";//sales_flat_order table city name
+		$subject        = $emailSubject; //'Reminder: Exhibiting In '.ucfirst(strtolower($cityname));//subject for email
+		//$subject            = 'Reminder: Exhibition in Juhu Starts Tomorrow';
+		$sms_utm_campaign   = $tag_sms   = $exhibitionCity.'_sms';//utm_campaign for SMS
+		$email_utm_campaign = $tag_email = $exhibitionCity.'_email';//utm_campaign for Email
+
+		$offlineCityCustomers = OfflineCustomerEntity::getOfflineCityCustomerData($exhibitionCity, $cityid);
+
+		$cityNewsletterCustomers = NewsletterSubscriber::getNewsletterCitySubscribers($cityid);
+		$onlineCityCustomers     = SalesFlatOrderAddress::getCustomersByCity($cityLike);
+
+		$testEmployee    = array();
+		// $testEmployee[0] = array("email" => "komal@faridagupta.com", "name" => "Komal Bhagat", "mobile" => "7533061241");
+		$testEmployee[1] = array("email" => "shad@faridagupta.com", "name" => "Sanjay Singh", "mobile" => "8130106434");
+		$testEmployee[2] = array("email" => "sanjay@faridagupta.com", "name" => "Sanjay Singh", "mobile" => "9873621245");
+		$testEmployee[3] = array("email" => "monu@faridagupta.com", "name" => "Monu Nath", "mobile" => "9818648134");
+<<<<<<< HEAD
+		//$testEmployee[4] = array("email" => "sahil@faridagupta.com", "name" => "Sahil Gupta", "mobile" => "9818137346");
+		//$testEmployee[5] = array("email" => "sandeep@faridagupta.com", "name" => "Sandeep", "mobile" => "8800745258");
+		//$testEmployee[6] = array("email" => "zeba@faridagupta.com", "name" => "Zeba Aslam", "mobile" => "8130066017");
+=======
+		$testEmployee[4] = array("email" => "sahil@faridagupta.com", "name" => "Sahil Gupta", "mobile" => "9818137346");
+		$testEmployee[5] = array("email" => "sandeep@faridagupta.com", "name" => "Sandeep", "mobile" => "8800745258");
+		$testEmployee[6] = array("email" => "zeba@faridagupta.com", "name" => "Zeba Aslam", "mobile" => "8130066017");
+>>>>>>> 7af150578f4d2e97df026de5beb9c0015a003e8d
+		$testEmployee[7] = array("email" => "rajan@faridagupta.com", "name" => "Rajan", "mobile" => "7906077429");
+
+		if($userType == 'TestUsers') {
+
+			$customers = $testEmployee;
+ 
+		} else {
+
+			$customers = array_merge($testEmployee, $offlineCityCustomers, $cityNewsletterCustomers, $onlineCityCustomers);
+
+		}
+
+
+		if (!empty($customers)) {
+
+			$customers = Utility::uniqueMultidimArray($customers, 'mobile');
+
+			echo 'Total Customers::'.count($customers)."\n";
+			//send sms
+			if ($sendSms == 1) {
+
+				$sendSmsCount = 0;
+				$url          = $link.'?utm_source=sms&utm_medium=cps&utm_campaign='.$sms_utm_campaign.'&utm_location=-1';
+				/* get the short url */
+				//$bitlyLink = Utility::get_bitly_short_url($url, 'vaibhav15', 'R_eb5ff082a32747059c8bfb39223f0615');
+				$bitlyLink = 'https://goo.gl/4K4R8T';
+
+				//$smsBody = "Hi [NAME],\n\nToday is the last day of Farida Gupta's exhibition of her Summer 2018 collection in Hyderabad.\n\nVenue : Kalinga Cultural Trust, Plot No 1269, Road No 12, Banjara Hills\n\nTime : 10AM - 8PM\n\nDirections : https://goo.gl/YwCkg9\n\nSee you soon!"."\n\n".$signature."\n".$number;
+
+				$smsBody = "Hi [NAME],\n\n".$smsData."\n\n".$signature."\n".$number;
+
+				// get all the user who have unsubscribed
+				$unsubscribedMobileUser = NewsletterSubscriber::getMobileUnsubscribers();
+				// get all the user who have register in 'notify me'
+				$notifyMeUser = CustomerProductNotify::notifyMeOpenStatusByMobile();
+
+				foreach ($customers as $customer) {
+
+					if (preg_match('/^[0-9]{10}+$/', $customer['mobile']) == 0) {
+						continue;
+					} else if (strlen($customer['mobile']) != 10) {
+						continue;
+					} else if (in_array($customer['mobile'], $unsubscribedMobileUser)) {
+						continue;
+					} else if (in_array($customer['mobile'], $notifyMeUser)) {
+						continue;
+					}
+
+					// if (SmsUpdates::where('mobile', '=', $customer['mobile'])->count() > 0) {
+					//  		continue;
+					// }
+
+					$name = ucfirst(strtolower(trim(explode(" ", $customer['name'])[0])));
+
+					if (strtolower($name) == 'unknown' || strtolower($name) == 'test') {
+						$name = '';
+					}
+
+					//$sendSmsCount++;
+					$smsData                    = array();
+					$smsText                    = str_replace('[NAME]', $name, $smsBody);
+					echo " ".$smsData['mobile'] = $customer['mobile'];
+					$smsData['sms_type']        = $tag_sms;
+					$smsData['sms_content']     = $smsText;
+					$smsData['name']            = $name;
+
+					//exit;
+
+					$insertedSms = SmsUpdates::insert($smsData);
+
+					if ($insertedSms) {
+						$sendSmsCount++;
+						unset($smsData['sms_content']);
+						unset($smsData['name']);
+						$smsData['user_type'] = 'Customer';
+						//$insertedSms          = SmsUpdatesLog::insert($smsData);
+					}
+				}
+
+				echo ' Customers to send sms :: '.$sendSmsCount."\n";
+			}
+
+			//send email
+			if ($sendEmail == 1) {
+				$sendEmalCount = 0;
+
+				$createMailObj = new CreateMailTemplates;
+				$template_data = array();
+				$emailContent  = $createMailObj->createTemplateView($template_name, $template_data);
+
+				// get all the user who have unsubscribed
+				$unsubscribedEmailUser = NewsletterSubscriber::getEmailUnsubscribers();
+				// get all the user who have register in 'notify me'
+				$notifyMeUserEmail = CustomerProductNotify::notifyMeOpenStatusByEmail();
+
+				if (!empty($emailContent)) {
+
+					foreach ($customers as $customer) {
+
+						if (empty($customer['email'])) {
+							continue;
+						} else if (filter_var($customer['email'], FILTER_VALIDATE_EMAIL) == false) {
+							continue;
+						} else if (in_array($customer['email'], $unsubscribedEmailUser)) {
+							continue;
+						} else if (in_array($customer['email'], $notifyMeUserEmail)) {
+							continue;
+						}
+
+						// if (EmailUpdates::where('email', '=', $customer['email'])->count() > 0) {
+						// 			continue;
+						// }
+
+						$name = ucfirst(strtolower(trim(explode(" ", $customer['name'])[0])));
+
+						$emailData                  = array();
+						$emailData['customer_id']   = '';
+						$emailData['email']         = $customer['email'];
+						$emailData['name']          = $name;
+						$emailData['email_type']    = $tag_email;
+						$emailData['subject']       = $subject;
+						$emailData['email_content'] = str_replace(array("[NAME]", "[SUBJECT]"), array($name, $subject), $emailContent);
+
+						//dd($emailData);
+
+						$insertedEmail = EmailUpdates::insert($emailData);
+
+						if ($insertedEmail) {
+							$sendEmalCount++;
+							unset($emailData['email_content']);
+							unset($emailData['name']);
+							$emailData['user_type'] = 'Customer';
+							//$insertedEmail          = EmailUpdatesLog::insert($emailData);
+						}
+					}
+				}
+
+				echo 'Customers to send email::'.$sendEmalCount."\n";
+			}
+		}
+	}
+
+}
